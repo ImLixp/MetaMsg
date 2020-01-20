@@ -93,7 +93,6 @@ function Sign(signMsg) {
 }
 
 function onBtnClick(e) {
-    D("click!")
     if (web3.eth.accounts[0] == null) {
         alert("Please unlock MetaMask first");
         // Trigger login request with MetaMask
@@ -150,7 +149,6 @@ function onBtnClick(e) {
 }
 //function ()
 window.onload = (e)=>{
-    D("hello");
     var signBtn = document.getElementById("SignMeta");
     signBtn.onclick = onBtnClick; 
 }
