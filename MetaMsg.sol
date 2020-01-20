@@ -18,7 +18,7 @@ contract MetaMsg {
     
     string private constant MetaMsg_TYPE = "MetaMsg(address sender,address to,uint256 value,uint256 nonce,bytes32 refer,uint256 expire,bytes32 gasPayload,bytes32 payload)";
     bytes32 private constant MetaMsg_TYPEHASH = keccak256(abi.encodePacked(MetaMsg_TYPE));
-    struct MetaMsg{
+    struct Msg{
         address sender;
         address to;
         uint256 value;
@@ -30,8 +30,14 @@ contract MetaMsg {
     }
     mapping(address=>uint256) public nonce;
     mapping(bytes32=>uint256) public txid;
+    address sender;
 
-    function hashMetaMsg(MetaMsg memory metamsg) private pure returns (bytes32) {
+    modifier onlyMeta(){
+        require(msg.sender==address(this), "onlyMeta");
+        _;
+    }
+
+    function hashMetaMsg(Msg memory metamsg) private pure returns (bytes32) {
         return keccak256(abi.encodePacked(
             "\x19\x01",
             DOMAIN_SEPARATOR,
@@ -49,39 +55,42 @@ contract MetaMsg {
         ));
     }
 
-    function MetaMsgHandler(MetaMsg memory metamsg, bytes memory gasPayload, bytes memory payload, bytes32 sigR, bytes32 sigS, uint8 sigV) public payable  {
-        require(keccak256(gasPayload) == metamsg.gasPayload, "gasPayload is wrong");
-        require(keccak256(payload) == metamsg.payload, "payload is wrong");
-        require(address(this) == metamsg.to, "to is wrong");
-        bytes32 id = hashMetaMsg(metamsg);
-        address recaddr = ecrecover(id, sigV, sigR, sigS);
-        require(metamsg.sender == recaddr, "verify failed!");
+    function MetaMsgHandler(Msg memory metamsg, bytes memory gasPayload, bytes memory payload, bytes32 sigR, bytes32 sigS, uint8 sigV) public payable  {
         require(metamsg.nonce == 0 || metamsg.nonce == nonce[metamsg.sender]+1, "nonce wrong!");
         require(uint256(metamsg.refer) == 0 || txid[metamsg.refer] > 0, "refer wrong!");
-        require(txid[id] == 0, "tx is exist!");
-        require(metamsg.expire == 0 || now < metamsg.expire, "tx is expired!");
+        require(metamsg.expire == 0 || block.timestamp < metamsg.expire, "tx is expired!");
         require(msg.value == metamsg.value, "value is invalid!");
+        require(address(this) == metamsg.to, "to is wrong");
+
+        require(keccak256(gasPayload) == metamsg.gasPayload, "gasPayload is wrong");
+        require(keccak256(payload) == metamsg.payload, "payload is wrong");
+
+        bytes32 txID = hashMetaMsg(metamsg);
+        address ecAddress = ecrecover(txID, sigV, sigR, sigS);
+        require(metamsg.sender == ecAddress, "verify failed!");
+        require(txid[txID] == 0, "tx is exist!");
         bool ret;
         bytes memory returnData;
         if (gasPayload.length > 0){
             (ret, returnData) = metamsg.to.call(gasPayload);
-            require(ret, "gas insufficient");
+            require(ret, string(returnData));
         }
+        sender = metamsg.sender;
         (ret, returnData) = metamsg.to.call.value(msg.value)(payload);
         require(ret, string(returnData));
         nonce[metamsg.sender]++;
-        txid[id] = block.number;
+        txid[txID] = block.number;
     }
+    function MetaImpl() private; // just prevent generate bin
 }
 
     
-contract MetaContract is MetaMsg{    
-    modifier onlyThis(){
-        require(msg.sender==address(this), "onlyThis");
-        _;
-    }
+contract MetaContract is MetaMsg{
     address public owner;
-    function SetOwner(address _owner) public onlyThis{
-        owner = _owner;
+    modifier onlyOwner(){require(MetaMsg.sender == owner, "onlyOwner");_;}
+    function SetOwner(address newOwner) public onlyMeta onlyOwner {
+        owner = newOwner;
     }
+
+    function MetaImpl() private{}
 }
