@@ -1,31 +1,31 @@
 ### MetaTransaction
 This is an implementation of Meta Transactions.
 
-1. metaMsg结构体
-2. metaMsg
+#### MetaMsg
+We define MetaMsg and encode it with EIP721.
+MetaMsg has 8 fields:
+1. sender: the sender of Meta Transaction
+2. to: the contract address
+3. value: eth value of Meta Transaction
+4. nonce: nonce of the sender in contract
+5. refer: dependent Meta Transaction
+6. expire: expire of Meta Transaction
+7. gasPayload: method and params encode in ABI
+8. payload: method and params encode in ABI
 
+MetaMsg in solidity:
+```
+    struct MetaMsg{
+        address sender;
+        address to;
+        uint256 value;
+        uint256 nonce;
+        bytes32 refer;
+        uint256 expire;
+        bytes32 gasPayload;
+        bytes32 payload;
+    }
+```
+Demo is [here][demo].
 
-3. 复制合约到remix编译
-4. 将合约地址填到to
-5. 在remix中复制对应方法的payload，并填到payload中
-6. 点击sign按钮，将在下方生成参数
-7. 将生成的参数复制到remix中，并调用对应方法
-
-这里是meta txs的实现。
-Use EIP721 to encode MetaMsg, and then verify and exec it;
-MetaMsg in solidity
-```
-```
-MetaMsg in js
-```
-```
-MetaMsg.sender: sender address
-MetaMsg.to: the contract address
-MetaMsg.value: need euqal msg.value
-MetaMsg.nonce: nonce of sender in Contract
-MetaMsg.refer: refer pre txs
-MetaMsg.expire: expire time
-MetaMsg.gasPayload: use gasPayload to pay back gas
-MetaMsg.payload: call method
-
-demo is here
+[demo]: MetaMsg.html
