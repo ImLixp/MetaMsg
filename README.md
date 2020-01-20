@@ -26,6 +26,7 @@ MetaMsg in solidity:
         bytes32 payload;
     }
 ```
-Demo is [here][demo].
+Demo is [here][demo], doc is [here][doc].
 
 [demo]: MetaMsg.html
+[doc]: demo
