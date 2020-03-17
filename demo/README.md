@@ -14,7 +14,7 @@ This is an example of MetaMsg.
 
 [remix]: http://remix.ethereum.org/#optimize=false&evmVersion=null&version=soljson-v0.5.12+commit.7709ece9.js
 [MetaMsgSol]: MetaMsg.sol
-[MetaMsgDemo]: https://imlixp.github.io/MetaMsg/demo/MetaMsg.html
+[MetaMsgDemo]: https://peekpi.github.io/MetaMsg/demo/MetaMsg.html
 [deploy1]: img/deploy.png
 [encode3]: img/encode.png
 [sign4]: img/sign.png
